@@ -1,5 +1,5 @@
-const uuid = require('uuid/v4');
-const DocumentSnapshotMock = require('./DocumentSnapshotMock');
+const uuid = require("uuid/v4");
+const DocumentSnapshotMock = require("./DocumentSnapshotMock");
 // const CollectionRef = require('./collections');
 /*
 Firestore doc class used for mocking the admin SDK firestore class. This constructor is
@@ -11,24 +11,24 @@ function DocumentReferenceMock(id, firestore, col_ref) {
   this.id = id ? id : uuid();
   this.parent = col_ref;
   this.firestore = firestore;
-  this.path = 'This is not supported';
+  this.path = "This is not supported";
   if (!this.parent) {
     throw new Error(
-      'Doc ref instantiated without corresponding collection reference'
+      "Doc ref instantiated without corresponding collection reference"
     );
   }
-  if (typeof this.id !== 'string') {
+  if (typeof this.id !== "string") {
     throw new Error(
-      'Firestore wants its document ids to be strings, please give them what they want'
+      "Firestore wants its document ids to be strings, please give them what they want"
     );
   }
 }
 
 DocumentReferenceMock.prototype.set = function(data, options) {
-  if (typeof data !== 'object') {
-    throw new Error('Doc must be created from an object');
+  if (typeof data !== "object") {
+    throw new Error("Doc must be created from an object");
   } else if (!Object.keys(data).length) {
-    throw new Error('Cannot save an empty object in Firestore');
+    throw new Error("Cannot save an empty object in Firestore");
   }
 
   this.firestore._set(this.parent.id, this.id, data, options);
@@ -40,10 +40,10 @@ DocumentReferenceMock.prototype.get = function() {
 };
 
 DocumentReferenceMock.prototype.update = function(data) {
-  if (typeof data !== 'object') {
-    throw new Error('Doc must be updated using an object');
+  if (typeof data !== "object") {
+    throw new Error("Doc must be updated using an object");
   } else if (!Object.keys(data).length) {
-    throw new Error('Cannot update using an empty object');
+    throw new Error("Cannot update using an empty object");
   }
 
   this.firestore._update(this.parent.id, this.id, data);
@@ -57,12 +57,14 @@ DocumentReferenceMock.prototype.delete = function() {
 };
 
 DocumentReferenceMock.prototype.collection = function() {
-  return this.collection;
+  return this.parent;
 };
 
-DocumentReferenceMock.isEqual = function() {
-  console.log('This is not supported');
-  return;
+DocumentReferenceMock.prototype.isEqual = function() {
+  console.log(
+    "isEqual method on DocumentReference constructor is not supported"
+  );
+  return "This is not supported";
 };
 
 module.exports = DocumentReferenceMock;
