@@ -1,0 +1,28 @@
+{
+  "name": "firestore-admin-mock",
+  "version": "1.0.0",
+  "description": "Firestore intsance mock for the Firebase Admin SDK ",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mwallacemn/firestore-admin-mock.git"
+  },
+  "author": "Michael Wallace",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mwallacemn/firestore-admin-mock/issues"
+  },
+  "homepage": "https://github.com/mwallacemn/firestore-admin-mock#readme"
+}

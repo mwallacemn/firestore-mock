@@ -1,6 +1,6 @@
-const QuerySnapshotMock = require('./QuerySnapshotMock');
-const QueryDocumentSnapshotMock = require('./QueryDocumentSnapshotMock');
-const DocumentReferenceMock = require('./DocumentReferenceMock');
+const QuerySnapshotMock = require("./QuerySnapshotMock");
+const QueryDocumentSnapshotMock = require("./QueryDocumentSnapshotMock");
+const DocumentReferenceMock = require("./DocumentReferenceMock");
 
 /*
 Firestore Query class used in mocking the admin SDK firestore class. This constructor
@@ -15,13 +15,13 @@ function QueryMock(firestore) {
 }
 
 QueryMock.prototype.where = function(field, operator, value) {
-  if (typeof field !== 'string' || typeof operator !== 'string') {
-    throw new Error('Field and operator parameters must be strings');
+  if (typeof field !== "string" || typeof operator !== "string") {
+    throw new Error("Field and operator parameters must be strings");
   }
 
   if (!this.id) {
     throw new Error(
-      'Collection reference not assigned - was this method called on a collection?'
+      "Collection reference not assigned - was this method called on a collection?"
     );
   }
   // if a .where() has not been called on this query, or a .where was already called and
@@ -42,8 +42,11 @@ QueryMock.prototype.where = function(field, operator, value) {
 QueryMock.prototype.get = function() {
   if (!this.id) {
     throw new Error(
-      'Collection reference not assigned - was this method called on a collection?'
+      "Collection reference not assigned - was this method called on a collection?"
     );
+  }
+  if (!this._docs) {
+    this._docs = this.firestore._db._collections[this.id];
   }
   let keys = Object.keys(this._docs);
   let docs = keys.map(key => {

@@ -1,6 +1,6 @@
-const util = require('util');
-const CollectionReferenceMock = require('./CollectionReferenceMock');
-const DatabaseMock = require('./DatabaseMock');
+const util = require("util");
+const CollectionReferenceMock = require("./CollectionReferenceMock");
+const DatabaseMock = require("./DatabaseMock");
 
 /*
 FirestoreMock class used for mocking the admin SDK FirestoreMock class. Can be stubbed in
@@ -9,7 +9,7 @@ the test by sinon or imported into a test file and used as a function param
 
 function FirestoreMock() {
   this._db = new DatabaseMock();
-  this.app = 'Mock app not supported';
+  this.app = "Mock app not supported";
 }
 
 FirestoreMock.prototype.firestore = function() {
@@ -38,7 +38,7 @@ FirestoreMock.prototype._set = function(collection_id, id, data, options) {
   }
   if (
     options &&
-    options['merge'] === 'true' &&
+    options["merge"] === "true" &&
     this._db._collections[collection_id][id]
   ) {
     this._update(collection_id, id, data);
@@ -50,17 +50,17 @@ FirestoreMock.prototype._set = function(collection_id, id, data, options) {
 };
 
 FirestoreMock.prototype._update = function(collection_id, id, data) {
-  data = this._checkData(data, id);
+  let serialized_data = this._checkData(data, id);
   if (
     !this._db._collections[collection_id] &&
     !this._db._collections[collection_id][id]
   ) {
-    throw new Error('Document does not exist, failed to update');
+    throw new Error("Document does not exist, failed to update");
   } else {
-    let keys = Object.keys(data);
+    let keys = Object.keys(serialized_data);
     let doc = this._db._collections[collection_id][id];
     for (let index in keys) {
-      doc[keys[index]] = data[keys[index]];
+      doc[keys[index]] = serialized_data[keys[index]];
     }
     return;
   }
@@ -81,14 +81,26 @@ FirestoreMock.prototype._where = function(
   collection_id
 ) {
   let operators = {
-    '==': function(field, value) {
+    "==": function(field, value) {
+      if (field && field.constructor.name === "TimestampMock") {
+        try {
+          return field.date.getTime() === value.getTime();
+        } catch (err) {
+          throw new Error(
+            "A query was performed on a firebase Timestamp field without using a JavaScript Date object"
+          );
+        }
+      }
       return field === value;
+    },
+    "array-contains": function(field, value) {
+      return field.includes(value);
     }
   };
 
   if (!operators[operator]) {
     throw new Error(
-      'Query.where() calls with this operator is not supported at this time'
+      "Query.where() calls with this operator is not supported at this time"
     );
   }
 
@@ -120,6 +132,7 @@ FirestoreMock.prototype._where = function(
 };
 
 FirestoreMock.prototype._checkData = function(data, id) {
+  let serialized_data = {};
   let keys = Object.keys(data);
   let undefined_keys = keys.map(key => {
     if (data[key] === undefined) {
@@ -132,34 +145,44 @@ FirestoreMock.prototype._checkData = function(data, id) {
   });
 
   if (undefined_keys.length) {
-    let names = undefined_keys.join(' ');
+    let names = undefined_keys.join(" ");
     throw new Error(
-      `Doc ${id} contains undefined key values ${names}, cannot save to Firestore`
+      `Document ${id} contains undefined key values: ${names}. This document cannot be saved to Firestore.`
     );
   }
 
   for (let index in keys) {
-    if (data[keys[index]].constructor === Date) {
-      data[keys[index]] = new TimestampMock(data[keys[index]]);
+    if (data[keys[index]] === null) {
+      serialized_data[keys[index]] = null;
+    } else if (data[keys[index]].constructor === Date) {
+      serialized_data[keys[index]] = new TimestampMock(data[keys[index]]);
+    } else if (data[keys[index]].constructor === Array) {
+      serialized_data[keys[index]] = [];
+      data[keys[index]].forEach(i => {
+        if (i.constructor === Date) {
+          serialized_data[keys[index]].push(new TimestampMock(i));
+        } else if (i.constructor === Array) {
+          throw new Error(`Document ${id} contains nested arrays. This document cannot be saved to
+        Firestore.`);
+        } else if (i.constructor === Object) {
+          let obj = {};
+          Object.keys(i).forEach(key => {
+            if (i[key].constructor === Date) {
+              obj[key] = new TimestampMock(i[key]);
+            } else {
+              obj[key] = i[key];
+            }
+          });
+          serialized_data[keys[index]].push(obj);
+        } else {
+          serialized_data[keys[index]].push(i);
+        }
+      });
+    } else {
+      serialized_data[keys[index]] = data[keys[index]];
     }
   }
-  return data;
-};
-
-FirestoreMock.prototype.clearData = function() {
-  delete this._db;
-  this._db = new DatabaseMock();
-};
-
-FirestoreMock.prototype.batch = function() {
-  return new WriteBatchMock(this);
-};
-
-FirestoreMock.prototype.runTransaction = async function(callback) {
-  let transaction = new TransactionMock(this);
-  await callback(transaction);
-  transaction.commit();
-  return;
+  return serialized_data;
 };
 
 function WriteBatchMock(firestore) {
