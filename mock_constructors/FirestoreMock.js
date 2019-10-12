@@ -185,6 +185,22 @@ FirestoreMock.prototype._checkData = function(data, id) {
   return serialized_data;
 };
 
+FirestoreMock.prototype.clearData = function() {
+  delete this._db;
+  this._db = new DatabaseMock();
+};
+
+FirestoreMock.prototype.batch = function() {
+  return new WriteBatchMock(this);
+};
+
+FirestoreMock.prototype.runTransaction = async function(callback) {
+  let transaction = new TransactionMock(this);
+  await callback(transaction);
+  transaction.commit();
+  return;
+};
+
 function WriteBatchMock(firestore) {
   this.firestore = firestore;
   this._set = [];
