@@ -1,6 +1,6 @@
-const util = require('util');
-const DocumentReferenceMock = require('./DocumentReferenceMock');
-const QueryMock = require('./QueryMock');
+const util = require("util");
+const DocumentReferenceMock = require("./DocumentReferenceMock");
+const QueryMock = require("./QueryMock");
 
 /*
 Firestore collection class used for mocking the admin SDK firestore class. This constructor
@@ -13,20 +13,19 @@ function CollectionReferenceMock(id, firestore) {
   this.id = id;
   this.firestore = firestore;
   this.parent = null;
-  this.path = 'This is not supported';
+  this.path = "This is not supported";
   if (!this.id) {
-    throw new Error('Collection ref instantiated without a collection id');
+    throw new Error("Collection ref instantiated without a collection id");
   } else if (!this.firestore) {
     throw new Error(
-      'Collection ref instantiated without firestore reference. Was this collection ref created through a Firestore instance?'
+      "Collection ref instantiated without firestore reference. Was this collection ref created through a Firestore instance?"
     );
   }
 }
 
+CollectionReferenceMock.prototype = Object.create(QueryMock.prototype);
+CollectionReferenceMock.prototype.constructor = CollectionReferenceMock;
 CollectionReferenceMock.prototype.doc = function(id) {
   return new DocumentReferenceMock(id, this.firestore, this);
 };
-
-util.inherits(CollectionReferenceMock, QueryMock);
-
 module.exports = CollectionReferenceMock;
