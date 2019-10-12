@@ -1,5 +1,5 @@
 {
-  "name": "firestore-admin-mock",
+  "name": "firestore-mock",
   "version": "1.0.0",
   "description": "Firestore intsance mock for the Firebase Admin SDK ",
   "main": "mock_constructors/FirestoreMock.js",
