@@ -11,11 +11,11 @@ QuerySnapshotMock.prototype.forEach = function(callback) {
 };
 
 QuerySnapshotMock.prototype.docChanges = function() {
-  return 'This is not supported';
+  return "This is not supported";
 };
 
 QuerySnapshotMock.prototype.isEqual = function() {
-  return 'This is not supported';
+  return "This is not supported";
 };
 
 module.exports = QuerySnapshotMock;

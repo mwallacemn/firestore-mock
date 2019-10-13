@@ -1,6 +1,6 @@
 {
   "name": "firestore-mock",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Firestore intsance mock for the Firebase Admin SDK ",
   "main": "mock_constructors/FirestoreMock.js",
   "directories": {
