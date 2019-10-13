@@ -1,4 +1,3 @@
-const util = require("util");
 const DocumentReferenceMock = require("./DocumentReferenceMock");
 const QueryMock = require("./QueryMock");
 

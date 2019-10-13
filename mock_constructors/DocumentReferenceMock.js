@@ -30,8 +30,10 @@ DocumentReferenceMock.prototype.set = function(data, options) {
   } else if (!Object.keys(data).length) {
     throw new Error("Cannot save an empty object in Firestore");
   }
+  // creating a clone so the original object is not altered
+  let data_clone = { ...data };
 
-  this.firestore._set(this.parent.id, this.id, data, options);
+  this.firestore._set(this.parent.id, this.id, data_clone, options);
   return new DocumentSnapshotMock(this);
 };
 
@@ -57,14 +59,12 @@ DocumentReferenceMock.prototype.delete = function() {
 };
 
 DocumentReferenceMock.prototype.collection = function() {
-  return this.parent;
+  return this.collection;
 };
 
-DocumentReferenceMock.prototype.isEqual = function() {
-  console.log(
-    "isEqual method on DocumentReference constructor is not supported"
-  );
-  return "This is not supported";
+DocumentReferenceMock.isEqual = function() {
+  console.log("This is not supported");
+  return;
 };
 
 module.exports = DocumentReferenceMock;

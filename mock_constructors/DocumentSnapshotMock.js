@@ -3,7 +3,7 @@ function DocumentSnapshotMock(ref) {
   this.ref = ref;
   this._data = this._set_state();
   this.exists = this._data ? true : false;
-  this.metadata = 'This is not supported';
+  this.metadata = "This is not supported";
 }
 
 DocumentSnapshotMock.prototype.data = function() {
