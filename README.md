@@ -1,4 +1,4 @@
-# firestore-admin-mock
+# firestore-mock
 A Firestore mock for node, intended to replace the Firestore instance from the Firebase Admin SDK. 
 Functions with async/await calls. This is still a work in progress and not every method and property
 in the Firestore classes are supported.
