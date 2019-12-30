@@ -1,6 +1,8 @@
 const assert = require("assert");
 const CollectionReferenceMock = require("../mock_constructors/CollectionReferenceMock");
 const QueryMock = require("../mock_constructors/QueryMock");
+const FirestoreMock = require("../mock_constructors/FirestoreMock");
+const DocumentSnapshotMock = require("../mock_constructors/DocumentSnapshotMock");
 
 describe("Testing DocumentReferenceMock properties and methods", () => {
   it("Instantiates given an id and firestore ref", () => {
@@ -36,8 +38,21 @@ describe("Testing DocumentReferenceMock properties and methods", () => {
 
   it("Returns a DocumentReferenceMock when doc method is called", () => {
     let col = new CollectionReferenceMock("1", { firestore: true });
-    console.log(col.proto);
     let doc_ref = col.doc("2");
     assert.equal(doc_ref.constructor.name, "DocumentReferenceMock");
+  });
+
+  it("Adds a new document with a generated id through the add method", () => {
+    let data = { a: "1" };
+    let firestore = new FirestoreMock();
+    let col = new CollectionReferenceMock("Test", firestore);
+    let documentSnapshot = col.add(data);
+    assert(documentSnapshot instanceof DocumentSnapshotMock);
+    assert.deepEqual(documentSnapshot.data(), data);
+    assert.equal(Object.keys(firestore._db._collections["Test"]).length, 1);
+    assert.deepEqual(
+      Object.values(firestore._db._collections["Test"])[0],
+      data
+    );
   });
 });

@@ -8,12 +8,13 @@ describe("Testing DocumentReferenceMock properties and methods", () => {
       { firestore: 1 },
       "collection"
     );
+
     assert.equal(doc_ref.id, "1");
     assert.deepEqual(doc_ref.firestore, { firestore: 1 });
     assert.equal(doc_ref.parent, "collection");
     assert.equal(doc_ref.path, "This is not supported");
     assert.equal(doc_ref.collection(), "collection");
-    assert.equal(doc_ref.isEqual(), "This is not supported");
+    assert.equal(doc_ref.isEqual(), undefined);
   });
 
   it("Throws error when non-string id is given", () => {
