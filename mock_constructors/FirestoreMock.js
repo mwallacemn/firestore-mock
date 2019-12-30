@@ -1,6 +1,7 @@
 const util = require("util");
 const CollectionReferenceMock = require("./CollectionReferenceMock");
 const DatabaseMock = require("./DatabaseMock");
+const TimestampMock = require("./TimestampMock");
 
 /*
 FirestoreMock class used for mocking the admin SDK FirestoreMock class. Can be stubbed in
@@ -80,24 +81,6 @@ FirestoreMock.prototype._where = function(
   docs,
   collection_id
 ) {
-  let operators = {
-    "==": function(field, value) {
-      if (field && field.constructor.name === "TimestampMock") {
-        try {
-          return field.date.getTime() === value.getTime();
-        } catch (err) {
-          throw new Error(
-            "A query was performed on a firebase Timestamp field without using a JavaScript Date object"
-          );
-        }
-      }
-      return field === value;
-    },
-    "array-contains": function(field, value) {
-      return field.includes(value);
-    }
-  };
-
   if (!operators[operator]) {
     throw new Error(
       "Query.where() calls with this operator is not supported at this time"
@@ -132,14 +115,12 @@ FirestoreMock.prototype._where = function(
 };
 
 FirestoreMock.prototype._checkData = function(data, id) {
-  let serialized_data = {};
   let keys = Object.keys(data);
   let undefined_keys = keys.map(key => {
     if (data[key] === undefined) {
       return key;
     }
   });
-
   undefined_keys = undefined_keys.filter(key => {
     return key !== undefined;
   });
@@ -151,38 +132,7 @@ FirestoreMock.prototype._checkData = function(data, id) {
     );
   }
 
-  for (let index in keys) {
-    if (data[keys[index]] === null) {
-      serialized_data[keys[index]] = null;
-    } else if (data[keys[index]].constructor === Date) {
-      serialized_data[keys[index]] = new TimestampMock(data[keys[index]]);
-    } else if (data[keys[index]].constructor === Array) {
-      serialized_data[keys[index]] = [];
-      data[keys[index]].forEach(i => {
-        if (i.constructor === Date) {
-          serialized_data[keys[index]].push(new TimestampMock(i));
-        } else if (i.constructor === Array) {
-          throw new Error(`Document ${id} contains nested arrays. This document cannot be saved to
-        Firestore.`);
-        } else if (i.constructor === Object) {
-          let obj = {};
-          Object.keys(i).forEach(key => {
-            if (i[key].constructor === Date) {
-              obj[key] = new TimestampMock(i[key]);
-            } else {
-              obj[key] = i[key];
-            }
-          });
-          serialized_data[keys[index]].push(obj);
-        } else {
-          serialized_data[keys[index]].push(i);
-        }
-      });
-    } else {
-      serialized_data[keys[index]] = data[keys[index]];
-    }
-  }
-  return serialized_data;
+  return serializeObject(data);
 };
 
 FirestoreMock.prototype.clearData = function() {
@@ -250,14 +200,200 @@ TransactionMock.prototype.get = function(ref) {
   return ref.get();
 };
 
-function TimestampMock(date) {
-  this.date = date;
+function serializeObject(obj) {
+  let serialized_obj = {};
+  let keys = Object.keys(obj);
+
+  for (let index in keys) {
+    let key = keys[index];
+    let val = obj[key];
+    if (
+      val === null ||
+      (val.constructor !== Date &&
+        val.constructor !== Array &&
+        val.constructor !== Object)
+    ) {
+      serialized_obj[key] = val;
+    } else if (val.constructor === Date) {
+      serialized_obj[key] = new TimestampMock(val);
+    } else if (val.constructor === Array) {
+      serialized_obj[key] = serializeArray(val);
+    } else {
+      serialized_obj[key] = serializeObject(val);
+    }
+  }
+  return serialized_obj;
 }
-TimestampMock.prototype.toMillis = function() {
-  return this.date.getTime();
-};
-TimestampMock.prototype.toDate = function() {
-  return this.date;
+
+function serializeArray(array) {
+  let serialized_array = [];
+  for (let index in array) {
+    let val = array[index];
+    if (val === null) {
+      serialized_array[index] = null;
+    } else if (val.constructor === Array) {
+      throw new Error(
+        "Document contains nested arrays and cannot be saved to Firestore"
+      );
+    } else if (val.constructor === Date) {
+      serialized_array[index] = new TimestampMock(val);
+    } else if (val.constructor === Array) {
+      serialized_array[index] = serializeArray(val);
+    } else if (val.constructor === Object) {
+      serialized_array[index] = serializeObject(val);
+    } else {
+      serialized_array[index] = val;
+    }
+  }
+  return serialized_array;
+}
+
+const operators = {
+  "==": function(field, value) {
+    if (field && field.constructor.name === "TimestampMock") {
+      try {
+        return field.date.getTime() === value.getTime();
+      } catch (err) {
+        throw new Error(
+          "A query was performed on a firebase Timestamp field without using a JavaScript Date object"
+        );
+      }
+    } else if (typeof field !== typeof value) {
+      return false;
+    } else {
+      return field === value;
+    }
+  },
+
+  "<=": function(field, value) {
+    if (field && field.constructor.name === "TimestampMock") {
+      try {
+        return field.date.getTime() <= value.getTime();
+      } catch (err) {
+        throw new Error(
+          "A query was performed on a firebase Timestamp field without using a JavaScript Date object"
+        );
+      }
+    } else if (typeof field !== typeof value) {
+      return false;
+    } else {
+      return field <= value;
+    }
+  },
+
+  ">=": function(field, value) {
+    if (field && field.constructor.name === "TimestampMock") {
+      try {
+        return field.date.getTime() >= value.getTime();
+      } catch (err) {
+        throw new Error(
+          "A query was performed on a firebase Timestamp field without using a JavaScript Date object"
+        );
+      }
+    } else if (typeof field !== typeof value) {
+      return false;
+    } else {
+      return field >= value;
+    }
+  },
+
+  ">": function(field, value) {
+    if (field && field.constructor.name === "TimestampMock") {
+      try {
+        return field.date.getTime() > value.getTime();
+      } catch (err) {
+        throw new Error(
+          "A query was performed on a firebase Timestamp field without using a JavaScript Date object"
+        );
+      }
+    } else if (typeof field !== typeof value) {
+      return false;
+    } else {
+      return field > value;
+    }
+  },
+
+  "<": function(field, value) {
+    if (field && field.constructor.name === "TimestampMock") {
+      try {
+        return field.date.getTime() < value.getTime();
+      } catch (err) {
+        throw new Error(
+          "A query was performed on a firebase Timestamp field without using a JavaScript Date object"
+        );
+      }
+    } else if (typeof field !== typeof value) {
+      return false;
+    } else {
+      return field < value;
+    }
+  },
+
+  "array-contains": function(field, value) {
+    if (!Array.isArray(field)) {
+      return false;
+    }
+    return field.includes(value);
+  },
+
+  in: function(field, values) {
+    if (!Array.isArray(values) || !values.length) {
+      throw new Error("The 'in' filter operator requires an array of values");
+    }
+
+    if (values.length > 10) {
+      throw new Error(
+        "Firestore only allows up to 10 values to be filtered in an 'in' filter"
+      );
+    }
+
+    if (field && field.constructor.name === "TimestampMock") {
+      for (let index in values) {
+        let val = values[index];
+        if (val instanceof Date && val.getTime() === field.date.getTime()) {
+          return true;
+        }
+      }
+      return false;
+    } else {
+      return values.includes(field);
+    }
+  },
+
+  "array-contains-any": function(field, values) {
+    if (!Array.isArray(values) || !values.length) {
+      throw new Error(
+        "The 'array-contains-any' filter operator requires an array of values"
+      );
+    }
+
+    if (values.length > 10) {
+      throw new Error(
+        "Firestore only allows up to 10 values to be filtered in an 'array-contains-any' filter"
+      );
+    }
+
+    if (!Array.isArray(field)) {
+      return false;
+    } else {
+      for (let index in values) {
+        let val = values[index];
+        if (val instanceof Date) {
+          let time = val.getTime();
+          for (let index in field) {
+            if (
+              field[index] instanceof TimestampMock &&
+              field[index].date.getTime() === time
+            ) {
+              return true;
+            }
+          }
+        } else {
+          return field.includes(val);
+        }
+      }
+    }
+  }
 };
 
 module.exports = FirestoreMock;

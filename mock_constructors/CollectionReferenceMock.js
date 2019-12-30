@@ -27,4 +27,14 @@ CollectionReferenceMock.prototype.constructor = CollectionReferenceMock;
 CollectionReferenceMock.prototype.doc = function(id) {
   return new DocumentReferenceMock(id, this.firestore, this);
 };
+CollectionReferenceMock.prototype.add = function(data) {
+  // creating a clone so the original object is not altered
+  let DocumentReference = new DocumentReferenceMock(
+    undefined,
+    this.firestore,
+    this
+  );
+  return DocumentReference.set(data);
+};
+
 module.exports = CollectionReferenceMock;

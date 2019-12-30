@@ -6,9 +6,7 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-    "uuid": "^3.3.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "mocha": "^6.2.0"
   },

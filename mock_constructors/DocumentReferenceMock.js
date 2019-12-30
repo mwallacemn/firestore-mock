@@ -1,6 +1,5 @@
-const uuid = require("uuid/v4");
+const createId = require("./IdMock");
 const DocumentSnapshotMock = require("./DocumentSnapshotMock");
-// const CollectionRef = require('./collections');
 /*
 Firestore doc class used for mocking the admin SDK firestore class. This constructor is
 called within the Collections constructor on create, update or deletion of docs, and is made
@@ -8,7 +7,7 @@ up of an id and an object of the doc's data.
  */
 
 function DocumentReferenceMock(id, firestore, col_ref) {
-  this.id = id ? id : uuid();
+  this.id = id ? id : createId();
   this.parent = col_ref;
   this.firestore = firestore;
   this.path = "This is not supported";
@@ -59,10 +58,10 @@ DocumentReferenceMock.prototype.delete = function() {
 };
 
 DocumentReferenceMock.prototype.collection = function() {
-  return this.collection;
+  return this.parent;
 };
 
-DocumentReferenceMock.isEqual = function() {
+DocumentReferenceMock.prototype.isEqual = function() {
   console.log("This is not supported");
   return;
 };
