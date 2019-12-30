@@ -1,18 +1,19 @@
 # firestore-mock
-A Firestore mock for node, intended to replace the Firestore instance from the Firebase Admin SDK. 
-Functions with async/await calls. This is still a work in progress and not every method and property
-in the Firestore classes are supported.
+
+A Firestore mock for node, intended to replace the node Firestore instance from the Firebase Admin SDK to allow for easy testing. Simply replace a Firestore instance with a FirestoreMock instance and run tests without having to set up the Firestore emulator. The FirestoreMock instance is lightweight and functions with async/await calls.
 
 Install through npm: \
-```npm install firestore-mock```
+`npm install firestore-mock`
 
-Import and instantiate the mock instance: 
+Import and instantiate the mock instance:
+
 ```
 const FirestoreMock = require('firestore-mock')
 const firestore = new FirestoreMock()
 ```
 
-Get, set, update, and delete methods are available, and all data is stored locally on the instance. All DocumentSnapshot methods are mocked:
+Get, set, update, and delete documents the same as a normal Firestore instance. All data is stored locally on the instance. All DocumentSnapshot methods are mocked:
+
 ```
 firestore.collection('Users').doc('user1').set({name: 'Stan'})
 let user = firestore.collection('Users').doc('user1).get()
@@ -25,18 +26,20 @@ firestore.collection('Users').doc('user1').set({'authentication': 'google'}, {me
 firestore.collection('Users').doc('user1').delete() //deleted doc
 ```
 
-Collection methods are are also available:
+Collection methods are are also available, as well as the following query filters: '<', '<=', '==', '>=', '>', 'array-contains', 'array-contains-any', and 'in':
+
 ```
  firestore.collection('Users').doc('user1').set({name: 'Stan'})
  let users = firestore.collection('Users').get();
  console.log(users.empty)  //returns false
  console.log(users.docs)  // returns array of DocumentSnapshotMocks
-  
- //where '==' and  'array-contains' queries are available, but '<=' and '>=' are not yet supported
+
+ //filter queries:
  users = firestore.collection('Users').where('name', '==', 'Stan Stanson').get()
 ```
 
-Javascript Date objects on a saved document are conveted into TimestampMocks with the toDate and toMillis methods:
+Javascript Date objects on a saved document are converted into TimestampMocks with the toDate and toMillis methods:
+
 ```
 firestore.collection('Users').doc('user2').set({name: 'Jan', date: new Date()})
 let user = firestore.collection('Users').doc('user2').get()
@@ -45,6 +48,7 @@ console.log(user.data().date.toMillis()) //returns unix timestamp
 ```
 
 Transactions and batch writes are also supported:
+
 ```
 const user_ref = firestore.collection('Users').doc('user2')
 const batch = firestore.batch()
@@ -57,9 +61,8 @@ firestore.runTransaction(transaction => {
 }
 ```
 
-All data is saved locally on the _db.collections property of the Firestore instance:
+All data is saved locally on the \_db.\_collections property of the Firestore instance for easy debugging when writing tests:
+
 ```
 firestore._db.collections //returns {Users: {user2: { name: 'Jan Jandaughter', ...} } }
 ```
-
-
