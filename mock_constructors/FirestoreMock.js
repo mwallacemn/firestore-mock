@@ -382,6 +382,30 @@ const operators = {
     }
   },
 
+  "not-in": function(field, values) {
+    if (!Array.isArray(values) || !values.length) {
+      throw new Error("The 'not-in' filter operator requires an array of values");
+    }
+
+    if (values.length > 10) {
+      throw new Error(
+        "Firestore only allows up to 10 values to be filtered in a 'not-in' filter"
+      );
+    }
+
+    if (field && field.constructor.name === "TimestampMock") {
+      for (let index in values) {
+        let val = values[index];
+        if (val instanceof Date && val.getTime() === field.date.getTime()) {
+          return false;
+        }
+      }
+      return false;
+    } else {
+      return !values.includes(field);
+    }
+  },
+
   "array-contains-any": function(field, values) {
     if (!Array.isArray(values) || !values.length) {
       throw new Error(
