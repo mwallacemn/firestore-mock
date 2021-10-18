@@ -376,6 +376,7 @@ const operators = {
     if (!Array.isArray(field)) {
       return false;
     } else {
+        var fieldHasVal = false;
       for (let index in values) {
         let val = values[index];
         if (val instanceof Date) {
@@ -389,9 +390,10 @@ const operators = {
             }
           }
         } else {
-          return field.includes(val);
+            fieldHasVal |= field.includes(val);
         }
       }
+        return fieldHasVal;
     }
   }
 };
