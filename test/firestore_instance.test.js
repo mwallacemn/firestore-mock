@@ -14,6 +14,14 @@ describe("Testing the Firestore instance", () => {
   });
 });
 
+describe("Testing the Firestore instance .doc accessor", () => {
+    it("Checks if document can be accessed with given path", () => {
+        let firestore = new FirestoreMock();
+        firestore._set("col1", "doc1", { a: 45 });
+        assert.deepEqual(firestore.doc('col1/doc1'), { a: 45 });
+    });
+});
+
 describe("Testing the _set method", () => {
   let firestore = new FirestoreMock();
   let data = { a: "1", b: "2" };

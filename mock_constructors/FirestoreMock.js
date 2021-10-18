@@ -21,6 +21,28 @@ FirestoreMock.prototype.collection = function(name) {
   return new CollectionReferenceMock(name, this);
 };
 
+FirestoreMock.prototype.doc = function(path) {
+    var parts = path.split('/');
+
+    var doc;
+
+    for (var i = 0; i < parts.length; i++) {
+        var name = parts[i];
+        if (name.trim() === '') break;
+
+        if (i == 0) {
+            doc = this.collection(name);
+        } else if (i % 2 == 0) {
+            doc = doc.collection(name, this, doc);
+        } else {
+            doc = doc.doc(name);
+        }
+    }
+
+    return doc;
+};
+
+
 FirestoreMock.prototype._get = function(collection_id, id) {
   if (
     !this._db._collections[collection_id] ||
