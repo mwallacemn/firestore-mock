@@ -18,7 +18,7 @@ describe("Testing the Firestore instance .doc accessor", () => {
     it("Checks if document can be accessed with given path", () => {
         let firestore = new FirestoreMock();
         firestore._set("col1", "doc1", { a: 45 });
-        assert.deepEqual(firestore.doc('col1/doc1'), { a: 45 });
+        assert.deepEqual(firestore.doc('col1/doc1').get().data(), { a: 45 });
     });
 });
 
@@ -172,6 +172,38 @@ describe("Testing the _get method", () => {
     assert.equal(firestore._get("Coll1", "Doc2"), undefined);
     assert.equal(firestore._get("Coll2", "Doc2"), undefined);
   });
+});
+
+
+describe("Testing the limit method", ()=>{
+  let firestore = new FirestoreMock();
+
+  before(()=>{
+    firestore._set("col1","doc1",{'a':1});
+    firestore._set("col1","doc2",{'a':1});
+    firestore._set("col1","doc3",{'a':1});
+  })
+
+  it("Applies the limit filter", ()=>{
+    var results = firestore.collection("col1").limit(2).get();
+    assert.equal(results.docs.length, 2);
+  });
+
+  it("Applies the limit filter with length greater than total docs", ()=>{
+    var results = firestore.collection("col1").limit(200).get();
+    assert.equal(results.docs.length, 3);
+  });
+
+  it("Applies the limit filter with length equal to 0", ()=>{
+    var results = firestore.collection("col1").limit(-1).get();
+    assert.equal(results.docs.length, 0);
+  });
+
+  it("Applies the limit with where condition", ()=>{
+    var results = firestore.collection("col1").where('a', '==', 1).limit(1).get();
+    assert.equal(results.docs.length, 1);
+  });
+
 });
 
 describe("Testing the firestore _where method with == filter", () => {

@@ -39,6 +39,38 @@ QueryMock.prototype.where = function(field, operator, value) {
   return this;
 };
 
+QueryMock.prototype.limit = function(limit) {
+  if (typeof limit !== "number") {
+    throw new Error("limit and operator parameter must be number");
+  }
+
+  if (!this.id) {
+    throw new Error(
+      "Collection reference not assigned - was this method called on a collection?"
+    );
+  }
+
+  if (!this._docs) {
+    this._docs = this.firestore._db._collections[this.id];
+  }
+  
+  // Ensure greater than 0
+  var end_limit = Math.max(0, limit); 
+  
+  var all_keys = Object.keys(this._docs).splice(0, end_limit);
+  var all_vals = Object.values(this._docs).splice(0, end_limit);
+
+  var new_docs = {};
+
+  for(var i=0; i<all_keys.length; i++){
+    new_docs[all_keys[i]] = all_vals[i];
+  }
+  
+  this._docs = new_docs;
+
+  return this;
+};
+
 QueryMock.prototype.get = function() {
   if (!this.id) {
     throw new Error(
