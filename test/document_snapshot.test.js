@@ -47,9 +47,23 @@ describe("Testing instantiation and methods", () => {
     assert.equal(ref1.path, "c1");
 
     var ref2 = firestore.collection("c1").doc("d1");
-    assert.equal(ref2.path, "c1/d1")
+    assert.equal(ref2.path, "c1/d1");
 
-    // FIXME: Add test for nested collections
+    // test for nested collections
+    var ref3 = firestore.collection("c1").doc("d1").collection("c2");
+    assert.equal(ref3.path, "c1/d1/c2");
+
+    var ref4 = firestore.collection("c1").doc("d1").collection("c3");
+    assert.equal(ref4.path, "c1/d1/c3");
+
+    var ref5 = firestore.collection("c1").doc("d1").collection("c2").doc("d2");
+    assert.equal(ref5.path, "c1/d1/c2/d2");
+
+    assert.equal(firestore.doc("c1").path, "c1");
+
+    assert.equal(firestore.doc("c1/d1/c2/d2/c3").path, "c1/d1/c2/d2/c3");
+
+    assert.equal(firestore.doc("c1/d1/c2/d2/c3/d3").get().exists, false);
 
   })
 });

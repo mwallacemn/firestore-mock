@@ -158,11 +158,14 @@ FirestoreMock.prototype._checkData = function(data, id) {
 };
 
 FirestoreMock.prototype._getPath = function(ref){
-  let path = ref.id;
+  var path_splits = ref.id.split("/");
+  let path = path_splits[path_splits.length-1];
 
   let parent = ref.parent;
   while(parent != null || parent != undefined){
-    path = parent.id + "/" + path;
+    let parent_ids = parent.id.split("/");
+    let parentRealId = parent_ids[parent_ids.length-1];
+    path = parentRealId + "/" + path;
     parent = parent.parent;
   }
 
