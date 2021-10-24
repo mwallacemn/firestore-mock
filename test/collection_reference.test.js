@@ -55,4 +55,17 @@ describe("Testing DocumentReferenceMock properties and methods", () => {
       data
     );
   });
+
+  it("Returns no docs when provided with non-existent collection", () => {
+    let firestore = new FirestoreMock();
+    var no_docs = firestore.collection('unknown-collection').get();
+    assert.equal(no_docs.docs.length, 0);
+  });
+
+  it("Returns no docs when provided with non-existent document id", () => {
+    let firestore = new FirestoreMock();
+    var no_docs = firestore.collection('unknown-collection').doc('non-existent').get();
+    assert.equal(no_docs.exists, false);
+    assert.deepEqual(no_docs.data(), {});
+  });
 });

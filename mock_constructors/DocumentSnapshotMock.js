@@ -7,6 +7,7 @@ function DocumentSnapshotMock(ref) {
 }
 
 DocumentSnapshotMock.prototype.data = function() {
+  if(!this._data) return {};
   return this._data;
 };
 

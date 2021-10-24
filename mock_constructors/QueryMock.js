@@ -52,6 +52,7 @@ QueryMock.prototype.limit = function(limit) {
 
   if (!this._docs) {
     this._docs = this.firestore._db._collections[this.id];
+    if (!this._docs) this._docs = {};
   }
   
   // Ensure greater than 0
@@ -79,6 +80,7 @@ QueryMock.prototype.get = function() {
   }
   if (!this._docs) {
     this._docs = this.firestore._db._collections[this.id];
+    if (!this._docs) this._docs = {};
   }
   let keys = Object.keys(this._docs);
   let docs = keys.map(key => {
