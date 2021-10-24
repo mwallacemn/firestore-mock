@@ -1,5 +1,6 @@
 const assert = require("assert");
 const DocumentSnapshotMock = require("../mock_constructors/DocumentSnapshotMock");
+const FirestoreMock = require("../mock_constructors/FirestoreMock");
 
 describe("Testing instantiation and methods", () => {
   it("Instantiates correctly based on reference object", () => {
@@ -38,4 +39,17 @@ describe("Testing instantiation and methods", () => {
     doc.get();
     assert.equal(doc.exists, false);
   });
+
+  it("Makes sure the returned path is correct", ()=>{
+    var firestore = new FirestoreMock();
+
+    var ref1 = firestore.collection("c1");
+    assert.equal(ref1.path, "c1");
+
+    var ref2 = firestore.collection("c1").doc("d1");
+    assert.equal(ref2.path, "c1/d1")
+
+    // FIXME: Add test for nested collections
+
+  })
 });

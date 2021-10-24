@@ -157,6 +157,18 @@ FirestoreMock.prototype._checkData = function(data, id) {
   return serializeObject(data);
 };
 
+FirestoreMock.prototype._getPath = function(ref){
+  let path = ref.id;
+
+  let parent = ref.parent;
+  while(parent != null || parent != undefined){
+    path = parent.id + "/" + path;
+    parent = parent.parent;
+  }
+
+  return path;
+}
+
 FirestoreMock.prototype.clearData = function() {
   delete this._db;
   this._db = new DatabaseMock();

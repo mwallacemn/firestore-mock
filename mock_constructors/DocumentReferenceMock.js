@@ -10,7 +10,6 @@ function DocumentReferenceMock(id, firestore, col_ref) {
   this.id = id ? id : createId();
   this.parent = col_ref;
   this.firestore = firestore;
-  this.path = "This is not supported";
   if (!this.parent) {
     throw new Error(
       "Doc ref instantiated without corresponding collection reference"
@@ -65,5 +64,11 @@ DocumentReferenceMock.prototype.isEqual = function() {
   console.log("This is not supported");
   return;
 };
+
+Object.defineProperty(DocumentReferenceMock.prototype, "path", {
+  get: function() {
+    return this.firestore._getPath(this);
+  }
+});
 
 module.exports = DocumentReferenceMock;

@@ -9,7 +9,6 @@ describe("Testing DocumentReferenceMock properties and methods", () => {
     let col = new CollectionReferenceMock("1", { firestore: true });
     assert.equal(col.id, "1");
     assert.deepEqual(col.firestore, { firestore: true });
-    assert.equal(col.path, "This is not supported");
     assert.equal(col.parent, null);
     assert(col instanceof QueryMock);
   });
@@ -58,13 +57,13 @@ describe("Testing DocumentReferenceMock properties and methods", () => {
 
   it("Returns no docs when provided with non-existent collection", () => {
     let firestore = new FirestoreMock();
-    var no_docs = firestore.collection('unknown-collection').get();
+    var no_docs = firestore.collection('unknown_collection').get();
     assert.equal(no_docs.docs.length, 0);
   });
 
   it("Returns no docs when provided with non-existent document id", () => {
     let firestore = new FirestoreMock();
-    var no_docs = firestore.collection('unknown-collection').doc('non-existent').get();
+    var no_docs = firestore.collection('unknown_collection').doc('non-existent').get();
     assert.equal(no_docs.exists, false);
     assert.deepEqual(no_docs.data(), {});
   });
