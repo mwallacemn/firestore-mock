@@ -64,5 +64,5 @@ firestore.runTransaction(transaction => {
 All data is saved locally on the \_db.\_collections property of the Firestore instance for easy debugging when writing tests:
 
 ```
-firestore._db.collections //returns {Users: {user2: { name: 'Jan Jandaughter', ...} } }
+firestore._db._collections //returns {Users: {user2: { name: 'Jan Jandaughter', ...} } }
 ```
