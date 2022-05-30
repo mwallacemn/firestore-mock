@@ -110,21 +110,31 @@ describe("Testing the _update method", () => {
     });
   });
 
-  it("Updates a function with a complex nested fields", () => {
+  it("Updates a document with complex nested fields", () => {
     let firestore = new FirestoreMock();
-    let data = { a: "1", b: "2" };
+    let data = { a: "1", b: { two: { three: "3" } } };
     firestore._set("Coll1", "Doc1", data);
     assert.deepEqual(firestore._db._collections["Coll1"]["Doc1"], data);
 
-    let data2 = {
+    let update = {
       ...data,
+      'b.two.three': 'three',
       c: ["a", 1, null, new TimestampMock(new Date())],
       d: null,
       e: new TimestampMock(new Date()),
       f: { g: null, h: new TimestampMock(new Date()), i: [] }
     };
 
-    firestore._update("Coll1", "Doc1", data2);
+    let data2 = {
+      ...data,
+      b: { two: { three: 'three' } },
+      c: ["a", 1, null, new TimestampMock(new Date())],
+      d: null,
+      e: new TimestampMock(new Date()),
+      f: { g: null, h: new TimestampMock(new Date()), i: [] }
+    };
+
+    firestore._update("Coll1", "Doc1", update);
     assert.deepEqual(firestore._db._collections["Coll1"]["Doc1"], data2);
   });
 
