@@ -1,5 +1,6 @@
-function QuerySnapshotMock(docs, query) {
+function QuerySnapshotMock(docs, query, changes) {
   this.docs = docs;
+  this._changes = changes || [];
   this.query = query;
   this.size = docs.length;
   this.empty = !docs.length;
@@ -11,7 +12,7 @@ QuerySnapshotMock.prototype.forEach = function(callback) {
 };
 
 QuerySnapshotMock.prototype.docChanges = function() {
-  return "This is not supported";
+  return this._changes;
 };
 
 QuerySnapshotMock.prototype.isEqual = function() {

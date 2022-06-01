@@ -11,6 +11,7 @@ the test by sinon or imported into a test file and used as a function param
 function FirestoreMock() {
   this._db = new DatabaseMock();
   this.app = "Mock app not supported";
+  this._collection_refs = {};
 }
 
 FirestoreMock.prototype.firestore = function() {
@@ -19,6 +20,21 @@ FirestoreMock.prototype.firestore = function() {
 
 FirestoreMock.prototype.collection = function(name) {
   return new CollectionReferenceMock(name, this);
+};
+
+FirestoreMock.prototype._attach = function(collection_ref) {
+  if (!this._collection_refs[collection_ref.id]) {
+    this._collection_refs[collection_ref.id] = [];
+  }
+  this._collection_refs[collection_ref.id].push(collection_ref);
+};
+
+FirestoreMock.prototype._change = function(collection_id, id, type) {
+  if (this._collection_refs[collection_id]) {
+    for (let collection_ref of this._collection_refs[collection_id]) {
+      collection_ref._change(id, type);
+    }
+  }
 };
 
 FirestoreMock.prototype._get = function(collection_id, id) {
@@ -43,9 +59,12 @@ FirestoreMock.prototype._set = function(collection_id, id, data, options) {
     this._db._collections[collection_id][id]
   ) {
     this._update(collection_id, id, data);
+    this._change(collection_id, id, 'modified');
     return;
   } else {
+    let type = this._db._collections[collection_id][id] ? 'modified' : 'added';
     this._db._collections[collection_id][id] = data;
+    this._change(collection_id, id, type);
     return;
   }
 };
@@ -63,12 +82,14 @@ FirestoreMock.prototype._update = function(collection_id, id, data) {
     for (let index in keys) {
       doc[keys[index]] = serialized_data[keys[index]];
     }
+    this._change(collection_id, id, 'modified');
     return;
   }
 };
 
 FirestoreMock.prototype._delete = function(collection_id, id) {
   if (this._db._collections[collection_id][id]) {
+    this._change(collection_id, id, 'removed');
     delete this._db._collections[collection_id][id];
   }
   return;

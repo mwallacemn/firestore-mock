@@ -55,4 +55,101 @@ describe("Testing DocumentReferenceMock properties and methods", () => {
       data
     );
   });
+
+  it("Calls onSnapshot listener with all existing docs initially", (done) => {
+    let firestore = new FirestoreMock();
+    let col = new CollectionReferenceMock("Test", firestore);
+    col.add({doc: 1});
+    col.add({doc: 2});
+    col.add({doc: 3});
+    col.onSnapshot((snapshot) => {
+      let changes = snapshot.docChanges();
+      assert.equal(changes.length, 3);
+      assert.equal(changes[0].type, "added");
+      assert.deepEqual(changes[0].doc.data(), {doc: 1});
+      assert.equal(changes[1].type, "added");
+      assert.deepEqual(changes[1].doc.data(), {doc: 2});
+      assert.equal(changes[2].type, "added");
+      assert.deepEqual(changes[2].doc.data(), {doc: 3});
+      done();
+    });
+  });
+
+  it("Calls onSnapshot listener when documents are added", (done) => {
+    let firestore = new FirestoreMock();
+    let col = new CollectionReferenceMock("Test", firestore);
+    col.onSnapshot((snapshot) => {
+      let changes = snapshot.docChanges();
+      assert.equal(changes.length, 1);
+      assert.equal(changes[0].type, "added");
+      assert.deepEqual(changes[0].doc.data(), {doc: 1});
+      done();
+    });
+    col.add({doc: 1});
+  });
+
+  it("Calls onSnapshot listener when documents are modified", (done) => {
+    let firestore = new FirestoreMock();
+    let col = new CollectionReferenceMock("Test", firestore);
+    let doc1 = col.add({doc: 1});
+    let call = 0;
+    col.onSnapshot((snapshot) => {
+      let changes = snapshot.docChanges();
+      if (call === 0) {
+        assert.equal(changes.length, 1);
+        assert.equal(changes[0].type, "added");
+        assert.deepEqual(changes[0].doc.data(), {doc: 1});
+        call++;
+      } else if (call === 1) {
+        assert.equal(changes.length, 1);
+        assert.equal(changes[0].type, "modified");
+        assert.deepEqual(changes[0].doc.data(), {doc: 2});
+        done();
+      }
+    });
+    doc1.ref.update({doc: 2});
+  });
+
+  it("Calls onSnapshot listener when documents are removed", (done) => {
+    let firestore = new FirestoreMock();
+    let col = new CollectionReferenceMock("Test", firestore);
+    let doc1 = col.add({doc: 1});
+    let call = 0;
+    col.onSnapshot((snapshot) => {
+      let changes = snapshot.docChanges();
+      if (call === 0) {
+        assert.equal(changes.length, 1);
+        assert.equal(changes[0].type, "added");
+        assert.deepEqual(changes[0].doc.data(), {doc: 1});
+        call++;
+      } else if (call === 1) {
+        assert.equal(changes.length, 1);
+        assert.equal(changes[0].type, "removed");
+        assert.deepEqual(changes[0].doc.data(), {doc: 1});
+        done();
+      }
+    });
+    doc1.ref.delete();
+  });
+
+  it("Returns unsubscribe function that stop listening from the onSnapshot method", (done) => {
+    let firestore = new FirestoreMock();
+    let col = new CollectionReferenceMock("Test", firestore);
+    let doc1 = col.add({doc: 1});
+    let call = 0;
+    let unsubscribe = col.onSnapshot((snapshot) => {
+      let changes = snapshot.docChanges();
+      if (call === 0) {
+        assert.equal(changes.length, 1);
+        assert.equal(changes[0].type, "added");
+        assert.deepEqual(changes[0].doc.data(), {doc: 1});
+        call++;
+      } else if (call === 1) {
+        throw new Error('Called twice');
+      }
+    });
+    unsubscribe();
+    doc1.ref.delete();
+    setTimeout(done,10);
+  });
 });
