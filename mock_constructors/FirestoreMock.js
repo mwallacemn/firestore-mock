@@ -21,6 +21,28 @@ FirestoreMock.prototype.collection = function(name) {
   return new CollectionReferenceMock(name, this);
 };
 
+FirestoreMock.prototype.doc = function(path) {
+    var parts = path.split('/');
+
+    var doc;
+
+    for (var i = 0; i < parts.length; i++) {
+        var name = parts[i];
+        if (name.trim() === '') break;
+
+        if (i == 0) {
+            doc = this.collection(name);
+        } else if (i % 2 == 0) {
+            doc = doc.collection(name, this, doc);
+        } else {
+            doc = doc.doc(name);
+        }
+    }
+
+    return doc;
+};
+
+
 FirestoreMock.prototype._get = function(collection_id, id) {
   if (
     !this._db._collections[collection_id] ||
@@ -134,6 +156,21 @@ FirestoreMock.prototype._checkData = function(data, id) {
 
   return serializeObject(data);
 };
+
+FirestoreMock.prototype._getPath = function(ref){
+  var path_splits = ref.id.split("/");
+  let path = path_splits[path_splits.length-1];
+
+  let parent = ref.parent;
+  while(parent != null || parent != undefined){
+    let parent_ids = parent.id.split("/");
+    let parentRealId = parent_ids[parent_ids.length-1];
+    path = parentRealId + "/" + path;
+    parent = parent.parent;
+  }
+
+  return path;
+}
 
 FirestoreMock.prototype.clearData = function() {
   delete this._db;
@@ -360,6 +397,30 @@ const operators = {
     }
   },
 
+  "not-in": function(field, values) {
+    if (!Array.isArray(values) || !values.length) {
+      throw new Error("The 'not-in' filter operator requires an array of values");
+    }
+
+    if (values.length > 10) {
+      throw new Error(
+        "Firestore only allows up to 10 values to be filtered in a 'not-in' filter"
+      );
+    }
+
+    if (field && field.constructor.name === "TimestampMock") {
+      for (let index in values) {
+        let val = values[index];
+        if (val instanceof Date && val.getTime() === field.date.getTime()) {
+          return false;
+        }
+      }
+      return false;
+    } else {
+      return !values.includes(field);
+    }
+  },
+
   "array-contains-any": function(field, values) {
     if (!Array.isArray(values) || !values.length) {
       throw new Error(
@@ -376,6 +437,7 @@ const operators = {
     if (!Array.isArray(field)) {
       return false;
     } else {
+        var fieldHasVal = false;
       for (let index in values) {
         let val = values[index];
         if (val instanceof Date) {
@@ -389,9 +451,10 @@ const operators = {
             }
           }
         } else {
-          return field.includes(val);
+            fieldHasVal |= field.includes(val);
         }
       }
+        return fieldHasVal;
     }
   }
 };

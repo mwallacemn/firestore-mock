@@ -1,5 +1,6 @@
 const createId = require("./IdMock");
 const DocumentSnapshotMock = require("./DocumentSnapshotMock");
+const CollectionReferenceMock = require("./CollectionReferenceMock");
 /*
 Firestore doc class used for mocking the admin SDK firestore class. This constructor is
 called within the Collections constructor on create, update or deletion of docs, and is made
@@ -10,7 +11,6 @@ function DocumentReferenceMock(id, firestore, col_ref) {
   this.id = id ? id : createId();
   this.parent = col_ref;
   this.firestore = firestore;
-  this.path = "This is not supported";
   if (!this.parent) {
     throw new Error(
       "Doc ref instantiated without corresponding collection reference"
@@ -57,13 +57,21 @@ DocumentReferenceMock.prototype.delete = function() {
   this.firestore._delete(this.parent.id, this.id);
 };
 
-DocumentReferenceMock.prototype.collection = function() {
-  return this.parent;
+DocumentReferenceMock.prototype.collection = function(name) {
+  var subCollectionRef = this.firestore.collection(this.path + "/" +name);
+  subCollectionRef.parent = this;
+  return subCollectionRef;
 };
 
 DocumentReferenceMock.prototype.isEqual = function() {
   console.log("This is not supported");
   return;
 };
+
+Object.defineProperty(DocumentReferenceMock.prototype, "path", {
+  get: function() {
+    return this.firestore._getPath(this);
+  }
+});
 
 module.exports = DocumentReferenceMock;

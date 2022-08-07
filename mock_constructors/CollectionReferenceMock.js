@@ -12,7 +12,6 @@ function CollectionReferenceMock(id, firestore) {
   this.id = id;
   this.firestore = firestore;
   this.parent = null;
-  this.path = "This is not supported";
   if (!this.id) {
     throw new Error("Collection ref instantiated without a collection id");
   } else if (!this.firestore) {
@@ -36,5 +35,11 @@ CollectionReferenceMock.prototype.add = function(data) {
   );
   return DocumentReference.set(data);
 };
+
+Object.defineProperty(CollectionReferenceMock.prototype, "path", {
+  get: function() {
+    return this.firestore._getPath(this)
+  }
+});
 
 module.exports = CollectionReferenceMock;

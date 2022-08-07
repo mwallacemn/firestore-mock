@@ -1,5 +1,6 @@
 const assert = require("assert");
 const QueryMock = require("../mock_constructors/QueryMock");
+const FirestoreMock = require("../mock_constructors/FirestoreMock");
 
 describe("Testing QueryMock parameters and methods", () => {
   it("Instantiates QueryMock with firestore ref", () => {
@@ -35,5 +36,55 @@ describe("Testing QueryMock parameters and methods", () => {
     );
 
     assert.throws(error, err);
+  });
+
+  it("Can orderby a number field", ()=>{
+    let firestore = new FirestoreMock();
+    let cRef = firestore.collection('c1');
+    cRef.add({'a':2});
+    cRef.add({'a':3});
+    cRef.add({'a':5});
+    cRef.add({'a':6});
+    cRef.add({'a':4});
+    cRef.add({'a':1});
+
+    let snapshot = firestore.collection('c1').orderBy('a', 'asc').get();
+    for(var i=1; i<snapshot.docs.length; i++){
+      var thisData = snapshot.docs[i].data()['a'];
+      var prevData = snapshot.docs[i-1].data()['a'];
+      assert.equal(thisData >= prevData, true);
+    }
+
+    snapshot = firestore.collection('c1').orderBy('a', 'desc').get();
+    for(var i=1; i<snapshot.docs.length; i++){
+      var thisData = snapshot.docs[i].data()['a'];
+      var prevData = snapshot.docs[i-1].data()['a'];
+      assert.equal(thisData <= prevData, true);
+    }
+  });
+
+  it("Can orderby a string field", ()=>{
+    let firestore = new FirestoreMock();
+    let cRef = firestore.collection('c1');
+    cRef.add({'a':'C'});
+    cRef.add({'a':'E'});
+    cRef.add({'a':'X'});
+    cRef.add({'a':'M'});
+    cRef.add({'a':'Q'});
+    cRef.add({'a':'R'});
+
+    let snapshot = firestore.collection('c1').orderBy('a', 'asc').get();
+    for(var i=1; i<snapshot.docs.length; i++){
+      var thisData = snapshot.docs[i].data()['a'];
+      var prevData = snapshot.docs[i-1].data()['a'];
+      assert.equal(thisData.charCodeAt(0) >= prevData.charCodeAt(0), true);
+    }
+
+    snapshot = firestore.collection('c1').orderBy('a', 'desc').get();
+    for(var i=1; i<snapshot.docs.length; i++){
+      var thisData = snapshot.docs[i].data()['a'];
+      var prevData = snapshot.docs[i-1].data()['a'];
+      assert.equal(thisData.charCodeAt(0) <= prevData.charCodeAt(0), true);
+    }
   });
 });

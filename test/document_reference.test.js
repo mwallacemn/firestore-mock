@@ -1,5 +1,6 @@
 const assert = require("assert");
 const DocumentReferenceMock = require("../mock_constructors/DocumentReferenceMock");
+const FirestoreMock = require("../mock_constructors/FirestoreMock");
 
 describe("Testing DocumentReferenceMock properties and methods", () => {
   it("Properly instantiates given an id, firestore instance and collection ref", () => {
@@ -12,8 +13,7 @@ describe("Testing DocumentReferenceMock properties and methods", () => {
     assert.equal(doc_ref.id, "1");
     assert.deepEqual(doc_ref.firestore, { firestore: 1 });
     assert.equal(doc_ref.parent, "collection");
-    assert.equal(doc_ref.path, "This is not supported");
-    assert.equal(doc_ref.collection(), "collection");
+    //assert.equal(doc_ref.collection(), "collection");
     assert.equal(doc_ref.isEqual(), undefined);
   });
 
@@ -162,5 +162,28 @@ describe("Testing DocumentReferenceMock properties and methods", () => {
     );
     let doc = doc_ref.update({ a: 1 });
     assert.equal(doc.constructor.name, "DocumentSnapshotMock");
+  });
+
+  it("Sets document in a subcollection", ()=>{
+    var firestore =new FirestoreMock();
+    var ref = firestore.collection("a").doc("b").collection("c").doc("d");
+    ref.set({'a':5});
+    
+    var ref2 = firestore.collection("a").doc("b").collection("c").doc("d");
+    assert.deepEqual(ref2.get().data(), {'a':5});
+    
+  });
+
+  it("Sets multiple document in a subcollection", ()=>{
+    var firestore =new FirestoreMock();
+    var ref = firestore.collection("a").doc("b").collection("c");
+    ref.add({'a':5});
+    ref.add({'a':5});
+    ref.add({'a':5});
+    ref.add({'a':5});
+    ref.add({'a':5});
+
+    assert.deepEqual(ref.get().docs.length, 5);
+    
   });
 });
