@@ -83,7 +83,20 @@ FirestoreMock.prototype._update = function(collection_id, id, data) {
     let keys = Object.keys(serialized_data);
     let doc = this._db._collections[collection_id][id];
     for (let index in keys) {
-      doc[keys[index]] = serialized_data[keys[index]];
+      let key = keys[index];
+      if (key.includes('.')) {
+        let target = doc;
+        let path = key.split('.');
+        let end = path.pop();
+        for(let step of path) {
+          if (target[step]) {
+            target = target[step];
+          }
+        }
+        target[end] = serialized_data[key];
+      } else {
+        doc[key] = serialized_data[key];
+      }
     }
     return;
   }
